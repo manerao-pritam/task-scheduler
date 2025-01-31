@@ -2,7 +2,9 @@ package org.example;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static org.example.TaskUtil.isValid;
 
@@ -11,32 +13,27 @@ public class TaskManager {
 
     public void addTask(Task task) {
         if (!isValid(task)) {
-            System.out.println("Error adding task " + task.getTitle() + ". Task due date can't be in the past.");
-            return;
+            throw new IllegalArgumentException("Invalid task due date or title.");
         }
         tasks.add(task);
     }
 
-    public List<Task> getTasks() {
-        return new ArrayList<>(this.tasks);
+    public Map<UUID, Task> getTasks() {
+        return this.tasks.stream()
+                .collect(Collectors.toMap(Task::getId, task -> task));
     }
 
     public Task getTaskById(final UUID taskId) {
-        for (Task task: this.tasks) {
-            if (task.getId().equals(taskId)) {
-                return task;
-            }
-        }
-
-        System.out.println("Task with id " + taskId + " not found.");
-        return null;
+        return this.tasks.stream()
+                .filter(task -> task.getId().equals(taskId))
+                .findFirst()
+                .orElse(null);
     }
 
     public Task updateTask(final UUID taskId, final Task taskToUpdate) {
         // validate task
         if (!isValid(taskToUpdate)) {
-            System.out.println("Update failed. Task due date can't be in the past.");
-            return null;
+            throw new IllegalArgumentException("Invalid task due date or title.");
         }
 
         Task savedTask = this.getTaskById(taskId);

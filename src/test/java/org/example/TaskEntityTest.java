@@ -15,7 +15,7 @@ public class TaskEntityTest {
     @BeforeEach
     void setUp() {
         // Initialize common objects to be used in the tests
-        dueDate = LocalDateTime.of(2025, 1, 31, 15, 0);
+        dueDate = LocalDateTime.now().plusDays(1);
         task = new Task("Test Task", dueDate);
     }
 
@@ -79,6 +79,16 @@ public class TaskEntityTest {
         assertEquals("Test Task", task.getTitle());
         assertNull(task.getDueDate());  // Should be null
     }
+
+    @Test
+    void testTaskWithPastDate() {
+        // Create a task with a past due date
+        Task task = new Task("Test Task", LocalDateTime.now().minusDays(1));
+
+        // Validate task using TaskUtil
+        assertFalse(TaskUtil.isValid(task), "Task with past due date should be invalid.");
+    }
+
 
     @Test
     void testSetCompleted() {

@@ -4,13 +4,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class TaskManagerTest {
 
@@ -29,7 +26,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void addTask() {
+    void testAddTask() {
         taskManager.addTask(task);
 
         // Verify task was added successfully
@@ -39,7 +36,26 @@ class TaskManagerTest {
     }
 
     @Test
-    void getTasks() {
+    void testAddInvalidTask() {
+        // Create a task with a past due date
+        Task invalidTask = new Task("Invalid Task", LocalDateTime.now().minusDays(1));
+
+        // Attempt to add the invalid task and verify that it throws an exception
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            taskManager.addTask(invalidTask);
+        });
+
+        // Assert that the exception message is as expected
+        assertEquals("Invalid task due date or title.", exception.getMessage());
+
+        // Verify that the task manager does not contain the invalid task
+        assertFalse(taskManager.getTasks().values().stream()
+                .anyMatch(task -> task.getTitle().equals("Invalid Task")));
+    }
+
+
+    @Test
+    void testGetTasks() {
         // Create new tasks
         Task task1 = new Task("Task 1", dueDate);
         Task task2 = new Task("Task 2", dueDate);
@@ -50,24 +66,24 @@ class TaskManagerTest {
         taskManager.addTask(task2);
 
         // Fetch all tasks
-        List<Task> tasks = taskManager.getTasks();
+        Map<UUID, Task> tasks = taskManager.getTasks();
         assertNotNull(tasks);
         assertEquals(3, tasks.size());
 
         // Verify the task list contains expected task titles
-        assertTrue(tasks.stream().anyMatch(t -> t.getTitle().equals("Test Task")
+        assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Test Task")
                 && t.getDueDate().equals(dueDate)), "Test Task should exist");
 
-        assertTrue(tasks.stream().anyMatch(t -> t.getTitle().equals("Task 1")
+        assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Task 1")
                 && t.getDueDate().equals(dueDate)), "Task 1 should exist");
 
-        assertTrue(tasks.stream().anyMatch(t -> t.getTitle().equals("Task 2")
+        assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Task 2")
                 && t.getDueDate().equals(dueDate)), "Task 2 should exist");
 
     }
 
     @Test
-    void getTaskById() {
+    void testGetTaskById() {
         taskManager.addTask(task);
 
         // Retrieve task by ID and validate
@@ -81,7 +97,7 @@ class TaskManagerTest {
     }
 
     @Test
-    void updateTask() {
+    void testUpdateTask() {
         taskManager.addTask(task);
 
         // Update task properties
@@ -101,7 +117,30 @@ class TaskManagerTest {
     }
 
     @Test
-    void deleteTask() {
+    void testUpdateInvalidTask() {
+        // Create a valid task and add it to the manager
+        Task validTask = new Task("Valid Task", LocalDateTime.now().plusDays(1));
+        taskManager.addTask(validTask);
+
+        // Attempt to update the valid task with an invalid due date (past date)
+        Task invalidUpdatedTask = new Task("Valid Task", LocalDateTime.now().minusDays(1));
+
+        // Attempt to update the task and verify that it throws an exception
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+            taskManager.updateTask(validTask.getId(), invalidUpdatedTask); // Assuming update by ID
+        });
+
+        // Assert that the exception message is as expected
+        assertEquals("Invalid task due date or title.", exception.getMessage());
+
+        // Verify that the task's title and due date have not been updated
+        Task fetchedTask = taskManager.getTaskById(validTask.getId());
+        assertEquals(validTask.getTitle(), fetchedTask.getTitle());
+        assertEquals(validTask.getDueDate(), fetchedTask.getDueDate());
+    }
+
+    @Test
+    void testDeleteTask() {
         taskManager.addTask(task);
         assertNotNull(taskManager.getTaskById(task.getId())); // Ensure task exists
 
@@ -110,7 +149,10 @@ class TaskManagerTest {
 
         // Verify task was deleted
         assertNull(taskManager.getTaskById(task.getId()));
+    }
 
+    @Test
+    void testDeleteNonExistingTask() {
         // Attempt to delete a non-existing task (should not throw an error)
         UUID randomId = UUID.randomUUID();
         taskManager.deleteTask(randomId);  // Should not fail

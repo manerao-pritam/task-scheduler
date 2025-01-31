@@ -9,7 +9,7 @@ public class Main {
         // create and read
         System.out.println("Creating tasks:");
         Task task = new Task("Learn OOP", LocalDateTime.now().plusDays(1));
-        Task task2 = new Task("Learnt OOP", LocalDateTime.now().minusDays(1));
+        Task task2 = new Task("Learnt OOP", LocalDateTime.now().plusDays(2));
         manager.addTask(task);
         manager.addTask(task2);
         System.out.println("\nYour Tasks: " + manager.getTasks());
