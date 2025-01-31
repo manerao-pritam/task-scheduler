@@ -12,7 +12,7 @@ public class Main {
         Task task2 = new Task("Learnt OOP", LocalDateTime.now().minusDays(1));
         manager.addTask(task);
         manager.addTask(task2);
-        System.out.println("\nYour Tasks: " + manager.getAllTasks());
+        System.out.println("\nYour Tasks: " + manager.getTasks());
 
         // create and read
         Task taskToUpdate = new Task("Learn DP", LocalDateTime.now().plusDays(2));
@@ -31,15 +31,15 @@ public class Main {
         System.out.println("Updated Task: " + updatedTask);
 
         // all tasks
-        System.out.println("\nYour Tasks: " + manager.getAllTasks());
+        System.out.println("\nYour Tasks: " + manager.getTasks());
 
         System.out.println("\nDeleting tasks:");
         Task taskToDelete = new Task("Learn Java", LocalDateTime.now().plusDays(3));
         manager.addTask(taskToDelete);
-        System.out.println("\nYour Tasks: " + manager.getAllTasks());
+        System.out.println("\nYour Tasks: " + manager.getTasks());
 
         // deleted task
         manager.deleteTask(taskToDelete.getId());
-        System.out.println("\nYour Tasks: " + manager.getAllTasks());
+        System.out.println("\nYour Tasks: " + manager.getTasks());
     }
 }

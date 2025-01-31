@@ -10,6 +10,8 @@ public class Task {
     private LocalDateTime dueDate;
     private boolean isCompleted = false;
 
+    public Task() {}
+
     public Task(final String title, final LocalDateTime dueDate) {
         this.title = title;
         this.dueDate = dueDate;
@@ -57,12 +59,12 @@ public class Task {
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
-        return isCompleted == task.isCompleted && Objects.equals(id, task.id)
-                && Objects.equals(title, task.title) && Objects.equals(dueDate, task.dueDate);
+        return isCompleted == task.isCompleted && Objects.equals(title, task.title)
+                && Objects.equals(dueDate, task.dueDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, dueDate, isCompleted);
+        return Objects.hash(title, dueDate, isCompleted);
     }
 }

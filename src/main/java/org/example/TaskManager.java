@@ -17,10 +17,8 @@ public class TaskManager {
         tasks.add(task);
     }
 
-    public List<String> getAllTasks() {
-        return this.tasks.stream()
-                .map(Task::toString)
-                .toList();
+    public List<Task> getTasks() {
+        return new ArrayList<>(this.tasks);
     }
 
     public Task getTaskById(final UUID taskId) {
