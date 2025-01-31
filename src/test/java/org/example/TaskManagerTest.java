@@ -41,9 +41,7 @@ class TaskManagerTest {
         Task invalidTask = new Task("Invalid Task", LocalDateTime.now().minusDays(1));
 
         // Attempt to add the invalid task and verify that it throws an exception
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            taskManager.addTask(invalidTask);
-        });
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> taskManager.addTask(invalidTask));
 
         // Assert that the exception message is as expected
         assertEquals("Invalid task due date or title.", exception.getMessage());
