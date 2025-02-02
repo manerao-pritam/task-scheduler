@@ -6,15 +6,13 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.example.TaskUtil.isValid;
+import static org.example.TaskUtil.validate;
 
 public class TaskManager {
     private final List<Task> tasks = new ArrayList<>();
 
     public void addTask(Task task) {
-        if (!isValid(task)) {
-            throw new IllegalArgumentException("Invalid task due date or title.");
-        }
+        validate(task);  // Validate before adding
         tasks.add(task);
     }
 
@@ -31,10 +29,7 @@ public class TaskManager {
     }
 
     public Task updateTask(final UUID taskId, final Task taskToUpdate) {
-        // validate task
-        if (!isValid(taskToUpdate)) {
-            throw new IllegalArgumentException("Invalid task due date or title.");
-        }
+        validate(taskToUpdate);  // Validate before adding
 
         Task savedTask = this.getTaskById(taskId);
         if (savedTask == null) {
@@ -43,6 +38,7 @@ public class TaskManager {
 
         savedTask.setTitle(taskToUpdate.getTitle());
         savedTask.setDueDate(taskToUpdate.getDueDate());
+        savedTask.setDescription(taskToUpdate.getDescription());
         savedTask.setCompleted(taskToUpdate.isCompleted());
 
         System.out.println("Task updated.");

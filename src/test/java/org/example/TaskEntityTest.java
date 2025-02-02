@@ -85,8 +85,13 @@ public class TaskEntityTest {
         // Create a task with a past due date
         Task task = new Task("Test Task", LocalDateTime.now().minusDays(1));
 
-        // Validate task using TaskUtil
-        assertFalse(TaskUtil.isValid(task), "Task with past due date should be invalid.");
+        // Validate task using TaskUtil and expect TaskValidationException
+        TaskValidationException ex = assertThrows(TaskValidationException.class,
+                () -> TaskUtil.validate(task),
+                "Expected TaskValidationException for a task with past due date.");
+
+        // ensure correct error message
+        assertEquals("Due date can't be in the past.", ex.getMessage());
     }
 
 

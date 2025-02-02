@@ -7,7 +7,14 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.example.TaskUtil.validate;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class TaskManagerTest {
 
@@ -27,6 +34,10 @@ class TaskManagerTest {
 
     @Test
     void testAddTask() {
+        // No exception should be thrown
+        assertDoesNotThrow(() -> validate(task),
+                "Valid task should not throw an exception.");
+
         taskManager.addTask(task);
 
         // Verify task was added successfully
@@ -38,13 +49,14 @@ class TaskManagerTest {
     @Test
     void testAddInvalidTask() {
         // Create a task with a past due date
-        Task invalidTask = new Task("Invalid Task", LocalDateTime.now().minusDays(1));
+        Task invalidTask = new Task("Invalid Task", null);
 
         // Attempt to add the invalid task and verify that it throws an exception
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> taskManager.addTask(invalidTask));
+        TaskValidationException exception = assertThrows(TaskValidationException.class,
+                () -> taskManager.addTask(invalidTask));
 
         // Assert that the exception message is as expected
-        assertEquals("Invalid task due date or title.", exception.getMessage());
+        assertEquals("Due date can't be null.", exception.getMessage());
 
         // Verify that the task manager does not contain the invalid task
         assertFalse(taskManager.getTasks().values().stream()
@@ -57,16 +69,18 @@ class TaskManagerTest {
         // Create new tasks
         Task task1 = new Task("Task 1", dueDate);
         Task task2 = new Task("Task 2", dueDate);
+        Task taskWithDesc = new Task("Task with description", dueDate, "This is a test task");
 
         // Add tasks to the manager
         taskManager.addTask(task);
         taskManager.addTask(task1);
         taskManager.addTask(task2);
+        taskManager.addTask(taskWithDesc);
 
         // Fetch all tasks
         Map<UUID, Task> tasks = taskManager.getTasks();
         assertNotNull(tasks);
-        assertEquals(3, tasks.size());
+        assertEquals(4, tasks.size());
 
         // Verify the task list contains expected task titles
         assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Test Task")
@@ -77,6 +91,9 @@ class TaskManagerTest {
 
         assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Task 2")
                 && t.getDueDate().equals(dueDate)), "Task 2 should exist");
+
+        assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Task with description")
+                && t.getDueDate().equals(dueDate)), "Task with description should exist");
 
     }
 
@@ -120,16 +137,16 @@ class TaskManagerTest {
         Task validTask = new Task("Valid Task", LocalDateTime.now().plusDays(1));
         taskManager.addTask(validTask);
 
-        // Attempt to update the valid task with an invalid due date (past date)
-        Task invalidUpdatedTask = new Task("Valid Task", LocalDateTime.now().minusDays(1));
+        // Attempt to update the valid task with an empty title
+        Task invalidUpdatedTask = new Task("", LocalDateTime.now().minusDays(1));
 
         // Attempt to update the task and verify that it throws an exception
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
+        TaskValidationException exception = assertThrows(TaskValidationException.class, () -> {
             taskManager.updateTask(validTask.getId(), invalidUpdatedTask); // Assuming update by ID
         });
 
         // Assert that the exception message is as expected
-        assertEquals("Invalid task due date or title.", exception.getMessage());
+        assertEquals("Task title can't be empty.", exception.getMessage());
 
         // Verify that the task's title and due date have not been updated
         Task fetchedTask = taskManager.getTaskById(validTask.getId());

@@ -3,17 +3,21 @@ package org.example;
 import java.time.LocalDateTime;
 
 public class TaskUtil {
-    public static boolean isValid(final Task task) {
+    public static void validate(Task task) throws TaskValidationException {
         if (task == null) {
-            return false;  // Task is null, invalid
+            throw new TaskValidationException("Task can't be null.");
         }
 
-        String taskTitle = task.getTitle();
-        LocalDateTime taskDueDate = task.getDueDate();
-        LocalDateTime now = LocalDateTime.now();
+        if (task.getTitle() == null || task.getTitle().trim().isEmpty()) {
+            throw new TaskValidationException("Task title can't be empty.");
+        }
 
-        // Title should not be null or empty, dueDate should not be null and should be in the future
-        return taskTitle != null && !taskTitle.trim().isEmpty() &&
-                taskDueDate != null && now.isBefore(taskDueDate);
+        if (task.getDueDate() == null) {
+            throw new TaskValidationException("Due date can't be null.");
+        }
+
+        if (task.getDueDate().isBefore(LocalDateTime.now())) {
+            throw new TaskValidationException("Due date can't be in the past.");
+        }
     }
 }
