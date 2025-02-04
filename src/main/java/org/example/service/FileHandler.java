@@ -1,4 +1,6 @@
-package org.example;
+package org.example.service;
+
+import org.example.entity.Task;
 
 import java.util.ArrayList;
 import java.util.List;

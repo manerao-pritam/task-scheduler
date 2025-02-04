@@ -1,4 +1,7 @@
-package org.example;
+package org.example.util;
+
+import org.example.entity.Task;
+import org.example.exception.TaskValidationException;
 
 import java.time.LocalDateTime;
 

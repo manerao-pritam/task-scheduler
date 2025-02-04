@@ -1,41 +1,41 @@
-package org.example;
+package org.example.service;
 
-import java.util.ArrayList;
+import org.example.entity.Task;
+import org.example.exception.TaskValidationException;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static org.example.TaskUtil.validate;
+import static org.example.util.TaskUtil.validate;
 
 public class TaskManager {
-    private final List<Task> tasks = new ArrayList<>();
+    private final Map<UUID, Task> tasks = new HashMap<>();
 
     public void addTask(Task task) {
         validate(task);  // Validate before adding
-        tasks.add(task);
+        tasks.put(task.getId(), task);
     }
 
     public Map<UUID, Task> getTasks() {
-        return this.tasks.stream()
+        return this.tasks.values().stream()
                 .collect(Collectors.toMap(Task::getId, task -> task));
     }
 
     public Task getTaskById(final UUID taskId) {
-        return this.tasks.stream()
-                .filter(task -> task.getId().equals(taskId))
-                .findFirst()
-                .orElse(null);
+        return this.tasks.get(taskId);
     }
 
     public Task updateTask(final UUID taskId, final Task taskToUpdate) {
         validate(taskToUpdate);  // Validate before adding
 
-        Task savedTask = this.getTaskById(taskId);
-        if (savedTask == null) {
-            return null;
+        if (!tasks.containsKey(taskId)) {
+            throw new TaskValidationException("Task not found");
         }
 
+        Task savedTask = this.tasks.get(taskId);
         savedTask.setTitle(taskToUpdate.getTitle());
         savedTask.setDueDate(taskToUpdate.getDueDate());
         savedTask.setDescription(taskToUpdate.getDescription());
@@ -46,12 +46,19 @@ public class TaskManager {
     }
 
     public void deleteTask(final UUID taskId) {
-        boolean deleted = this.tasks.removeIf(task -> task.getId().equals(taskId));
+        boolean deleted = this.tasks.values().removeIf(task -> task.getId().equals(taskId));
 
         if (deleted) {
             System.out.println("Task deleted.");
         } else {
             System.out.println("Task with id " + taskId + " not found.");
         }
+    }
+
+    public List<Task> searchTasks(final String filter, final IPriorityStrategy priority) {
+        return tasks.values().stream()
+                .filter(task -> filter == null || task.getTitle().toLowerCase().contains(filter.toLowerCase()))
+                .filter(task -> priority == null || task.getPriority().equals(priority))
+                .collect(Collectors.toList());
     }
 }

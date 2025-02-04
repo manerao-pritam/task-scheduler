@@ -1,9 +1,16 @@
 package org.example;
 
+import org.example.entity.Task;
+import org.example.exception.PriorityValidationException;
+import org.example.service.IPriorityStrategy;
+import org.example.service.StandardPriority;
+import org.example.service.TaskManager;
+import org.example.service.TaskPriorityDecorator;
+
 import java.time.LocalDateTime;
 
-public class Main {
-    public static void main(String[] args) {
+public class TaskSchedulerApplication {
+    public static void main(String[] args) throws PriorityValidationException {
         TaskManager manager = new TaskManager();
 
         // create and read
@@ -41,5 +48,18 @@ public class Main {
         // deleted task
         manager.deleteTask(taskToDelete.getId());
         System.out.println("\nYour Tasks: " + manager.getTasks());
+
+        // testing priority tasks
+        // Step 1: Create a normal task
+        Task normalTask = new Task("Finish Report", LocalDateTime.now().plusDays(2));
+
+        // Step 2: Create a priority strategy (e.g., High Priority)
+        IPriorityStrategy highPriority = new StandardPriority(StandardPriority.Priority.HIGH);
+
+        // Step 3: Decorate the task with priority
+        Task priorityTask = new TaskPriorityDecorator(normalTask, highPriority).getTask();
+
+        // Step 4: Print out the task
+        System.out.println(priorityTask);
     }
 }

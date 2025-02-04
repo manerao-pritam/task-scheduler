@@ -1,13 +1,17 @@
-package org.example;
+package org.example.service;
 
+import org.example.entity.Task;
+import org.example.exception.PriorityValidationException;
+import org.example.exception.TaskValidationException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.example.TaskUtil.validate;
+import static org.example.util.TaskUtil.validate;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -21,15 +25,35 @@ class TaskManagerTest {
     private Task task;
     private LocalDateTime dueDate;
     private TaskManager taskManager;
+    private IPriorityStrategy highPriority;
+    private IPriorityStrategy lowPriority;
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws PriorityValidationException {
         // Initialize a new task manager before each test
         taskManager = new TaskManager();
+
+        // priority
+        highPriority = new StandardPriority(StandardPriority.Priority.HIGH);
+        lowPriority = new StandardPriority(StandardPriority.Priority.LOW);
 
         // Create a new task with a future due date
         dueDate = LocalDateTime.now().plusDays(1);
         task = new Task("Test Task", dueDate);
+
+        // tasks with priority
+        Task clientMeeting = new Task("Meeting with client", LocalDateTime.now().plusDays(1));
+        clientMeeting.setPriority(highPriority);
+
+        Task projectDeadline = new Task("Project deadline", LocalDateTime.now().plusDays(2));
+        projectDeadline.setPriority(lowPriority);
+
+        Task teamMeeting = new Task("Meeting with team", LocalDateTime.now().plusDays(3));
+        teamMeeting.setPriority(highPriority);
+
+        taskManager.addTask(clientMeeting);
+        taskManager.addTask(projectDeadline);
+        taskManager.addTask(teamMeeting);
     }
 
     @Test
@@ -65,11 +89,12 @@ class TaskManagerTest {
 
 
     @Test
-    void testGetTasks() {
+    void testGetTasks() throws PriorityValidationException {
         // Create new tasks
         Task task1 = new Task("Task 1", dueDate);
         Task task2 = new Task("Task 2", dueDate);
         Task taskWithDesc = new Task("Task with description", dueDate, "This is a test task");
+        taskWithDesc.setPriority(new StandardPriority(StandardPriority.Priority.MEDIUM));
 
         // Add tasks to the manager
         taskManager.addTask(task);
@@ -80,7 +105,7 @@ class TaskManagerTest {
         // Fetch all tasks
         Map<UUID, Task> tasks = taskManager.getTasks();
         assertNotNull(tasks);
-        assertEquals(4, tasks.size());
+        assertEquals(7, tasks.size());
 
         // Verify the task list contains expected task titles
         assertTrue(tasks.values().stream().anyMatch(t -> t.getTitle().equals("Test Task")
@@ -171,5 +196,41 @@ class TaskManagerTest {
         // Attempt to delete a non-existing task (should not throw an error)
         UUID randomId = UUID.randomUUID();
         taskManager.deleteTask(randomId);  // Should not fail
+    }
+
+    @Test
+    void testSearchTaskByTitle() {
+        List<Task> result = taskManager.searchTasks("Meeting", null);
+        assertEquals(2, result.size(), "Expecting 2 tasks containing 'Meeting'");
+    }
+
+    @Test
+    void testSearchTaskByPriority() {
+        List<Task> result = taskManager.searchTasks(null, highPriority);
+        assertEquals(2, result.size(), "Expecting 2 high-priority tasks");
+    }
+
+    @Test
+    void testSearchByTitleAndPriority() {
+        List<Task> result = taskManager.searchTasks("Meeting", null);
+        assertEquals(2, result.size(), "Expecting 2 tasks containing 'Meeting'");
+
+        result = taskManager.searchTasks("Meeting", lowPriority);
+        assertEquals(0, result.size(), "Expecting no low-priority tasks containing 'Meeting'");
+    }
+
+    @Test
+    void testSearchTasksWithNoMatches() throws PriorityValidationException {
+        List<Task> result = taskManager.searchTasks("Nonexistent", null);
+        assertEquals(0, result.size(), "Should return 0 tasks for non-matching title");
+
+        result = taskManager.searchTasks(null, new StandardPriority(StandardPriority.Priority.MEDIUM));
+        assertEquals(0, result.size(), "Should return 0 tasks for non-existing priority");
+    }
+
+    @Test
+    void testSearchTasksWithNullParams() {
+        List<Task> result = taskManager.searchTasks(null, null);
+        assertEquals(3, result.size(), "Should return all tasks when no filters are applied");
     }
 }

@@ -1,11 +1,13 @@
-package org.example;
+package org.example.service;
+
+import org.example.exception.PriorityValidationException;
 
 public class StandardPriority implements IPriorityStrategy {
 
     private final Priority priority;
 
-    // public and static so it can be referenced from outside
-    public static enum Priority {
+    // public so it can be referenced from outside
+    public enum Priority {
         LOW,
         MEDIUM,
         HIGH,

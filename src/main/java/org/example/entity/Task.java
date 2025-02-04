@@ -1,4 +1,6 @@
-package org.example;
+package org.example.entity;
+
+import org.example.service.IPriorityStrategy;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
@@ -10,6 +12,7 @@ public class Task {
     private String description;
     private LocalDateTime dueDate;
     private boolean isCompleted = false;
+    private IPriorityStrategy priority;
 
     public Task() {}
 
@@ -44,6 +47,14 @@ public class Task {
         this.description = description;
     }
 
+    public IPriorityStrategy getPriority() {
+        return priority;
+    }
+
+    public void setPriority(final IPriorityStrategy priority) {
+        this.priority = priority;
+    }
+
     public LocalDateTime getDueDate() {
         return dueDate;
     }
@@ -61,6 +72,20 @@ public class Task {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Task task = (Task) o;
+        return isCompleted == task.isCompleted && Objects.equals(title, task.title)
+                && Objects.equals(description, task.description) && Objects.equals(dueDate, task.dueDate)
+                && Objects.equals(priority, task.priority);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(description, dueDate, isCompleted, priority);
+    }
+
+    @Override
     public String toString() {
         return "Task{" +
                 "id=" + id +
@@ -68,21 +93,8 @@ public class Task {
                 ", description='" + description + '\'' +
                 ", dueDate=" + dueDate +
                 ", isCompleted=" + isCompleted +
+                ", priority=" + priority +
                 '}';
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return isCompleted == task.isCompleted
-                && Objects.equals(title, task.title)
-                && Objects.equals(description, task.description)
-                && Objects.equals(dueDate, task.dueDate);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(title, description, dueDate, isCompleted);
-    }
 }
