@@ -3,6 +3,8 @@ package org.example.service;
 import org.example.entity.Task;
 import org.example.exception.TaskValidationException;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +15,7 @@ import static org.example.util.TaskUtil.validate;
 
 public class TaskManager {
     private final Map<UUID, Task> tasks = new HashMap<>();
+    private final List<ITaskObserver> observers = new ArrayList<>();
 
     public void addTask(Task task) {
         validate(task);  // Validate before adding
@@ -60,5 +63,15 @@ public class TaskManager {
                 .filter(task -> filter == null || task.getTitle().toLowerCase().contains(filter.toLowerCase()))
                 .filter(task -> priority == null || task.getPriority().equals(priority))
                 .collect(Collectors.toList());
+    }
+
+    public void addObserver(final ITaskObserver observer) {
+        this.observers.add(observer);
+    }
+
+    public void checkDeadLines() {
+        this.tasks.values().stream()
+                .filter(task -> task.getDueDate().isBefore(LocalDateTime.now().plusDays(1)))
+                .forEach(task -> this.observers.forEach(observer -> observer.onTaskDue(task)));
     }
 }

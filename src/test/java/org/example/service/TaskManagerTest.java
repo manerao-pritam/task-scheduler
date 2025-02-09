@@ -19,6 +19,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class TaskManagerTest {
 
@@ -232,5 +234,19 @@ class TaskManagerTest {
     void testSearchTasksWithNullParams() {
         List<Task> result = taskManager.searchTasks(null, null);
         assertEquals(3, result.size(), "Should return all tasks when no filters are applied");
+    }
+
+    @Test
+    void testDeadLineNotificationObservers() {
+        Task urgentTask = new Task("Urgent Task",
+                LocalDateTime.now().plusHours(2), StandardPriority.Priority.CRITICAL.name());
+        taskManager.addTask(urgentTask);
+
+        // task observer
+        ITaskObserver observer = mock(ITaskObserver.class);
+        taskManager.addObserver(observer);
+
+        taskManager.checkDeadLines();
+        verify(observer).onTaskDue(urgentTask);
     }
 }
