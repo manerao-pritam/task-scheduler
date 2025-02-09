@@ -20,6 +20,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 class TaskManagerTest {
@@ -238,15 +239,20 @@ class TaskManagerTest {
 
     @Test
     void testDeadLineNotificationObservers() {
-        Task urgentTask = new Task("Urgent Task",
-                LocalDateTime.now().plusHours(2), StandardPriority.Priority.CRITICAL.name());
-        taskManager.addTask(urgentTask);
+        Task upcomingTask = new Task("Urgent", LocalDateTime.now().plusHours(1));
+        upcomingTask.setPriority(highPriority);
+        Task nonUpcomingTask = new Task("Later", LocalDateTime.now().plusDays(2));
+        nonUpcomingTask.setPriority(lowPriority);
 
-        // task observer
-        ITaskObserver observer = mock(ITaskObserver.class);
-        taskManager.addObserver(observer);
+        // add tasks
+        taskManager.addTask(upcomingTask);
+        taskManager.addTask(nonUpcomingTask);
 
-        taskManager.checkDeadLines();
-        verify(observer).onTaskDue(urgentTask);
+        ITaskObserver mockObserver = mock(ITaskObserver.class);
+        taskManager.addObserver(mockObserver);
+
+        taskManager.checkDeadLines(1); // 1-day threshold
+        verify(mockObserver).onTaskDue(upcomingTask);
+        verify(mockObserver, never()).onTaskDue(nonUpcomingTask);
     }
 }

@@ -35,16 +35,16 @@ public class Task {
         return title;
     }
 
-    public void setTitle(String title) {
-        this.title = title;
+    public void setTitle(final String title) {
+        this.title = title.trim();
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setDescription(final String description) {
+        this.description = description.trim();
     }
 
     public IPriorityStrategy getPriority() {
@@ -59,7 +59,7 @@ public class Task {
         return dueDate;
     }
 
-    public void setDueDate(LocalDateTime dueDate) {
+    public void setDueDate(final LocalDateTime dueDate) {
         this.dueDate = dueDate;
     }
 
@@ -72,7 +72,7 @@ public class Task {
     }
 
     @Override
-    public boolean equals(Object o) {
+    public boolean equals(final Object o) {
         if (o == null || getClass() != o.getClass()) return false;
         Task task = (Task) o;
         return isCompleted == task.isCompleted && Objects.equals(title, task.title)

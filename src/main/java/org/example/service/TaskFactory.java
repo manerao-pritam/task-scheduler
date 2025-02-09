@@ -34,7 +34,7 @@ public class TaskFactory {
                 // @TODO:: Create and return a DeadlineTask
                 yield new Task(title, dueDate);
             }
-            case SIMPLE, default -> new Task(title, dueDate);
+            default -> new Task(title, dueDate);
         };
     }
 }

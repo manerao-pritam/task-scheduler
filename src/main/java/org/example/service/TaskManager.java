@@ -69,9 +69,10 @@ public class TaskManager {
         this.observers.add(observer);
     }
 
-    public void checkDeadLines() {
+    public void checkDeadLines(final int daysBefore) {
+        LocalDateTime threshold = LocalDateTime.now().plusDays(daysBefore);
         this.tasks.values().stream()
-                .filter(task -> task.getDueDate().isBefore(LocalDateTime.now().plusDays(1)))
+                .filter(task -> task.getDueDate().isBefore(threshold))
                 .forEach(task -> this.observers.forEach(observer -> observer.onTaskDue(task)));
     }
 }
